@@ -18,7 +18,6 @@ public class SpamCheckerController {
 
     @GetMapping("/check-spam")
     public String checkSpam() {
-
         return "Spam Checker";
     }
 }

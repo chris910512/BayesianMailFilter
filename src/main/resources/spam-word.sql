@@ -1,4 +1,4 @@
-INSERT INTO SPAM_WORD_ENTITY (id, word) VALUES (1, 'Act now!');
+INSERT INTO SPAM_WORD_ENTITY (word) VALUES ('Act now!');
 INSERT INTO SPAM_WORD_ENTITY (word) VALUES ('Apply now!');
 INSERT INTO SPAM_WORD_ENTITY (word) VALUES ('Call now!');
 INSERT INTO SPAM_WORD_ENTITY (word) VALUES ('Don’t hesitate!');
