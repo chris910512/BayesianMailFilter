@@ -1,13 +1,12 @@
 package com.sussex.bayesianspamfilter.domain.spamchecker;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Entity
 @Getter
@@ -20,5 +19,14 @@ public class SpamWordEntity {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
     private String word;
+    private double impactFactor;
+
+    @ManyToMany
+    @JoinTable(
+            name = "spam_word_relations",
+            joinColumns = @JoinColumn(name = "word_id"),
+            inverseJoinColumns = @JoinColumn(name = "related_word_id")
+    )
+    private List<SpamWordEntity> relatedWords;
 
 }

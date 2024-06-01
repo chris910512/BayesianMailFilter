@@ -5,7 +5,6 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class Email {
+public class EmailContentRequest {
     private final String content;
-    private final boolean isSpam;
 }

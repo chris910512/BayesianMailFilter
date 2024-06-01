@@ -4,16 +4,23 @@ package com.sussex.bayesianspamfilter.domain;
 import com.sussex.bayesianspamfilter.domain.spamchecker.SpamWordEntity;
 import com.sussex.bayesianspamfilter.domain.spamchecker.SpamWordRepository;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
 public class DatabaseInitializer implements CommandLineRunner {
 
+    private static final Logger logger = LoggerFactory.getLogger(DatabaseInitializer.class);
     private final SpamWordRepository spamWordRepository;
 
     String[] words = {
@@ -55,8 +62,25 @@ public class DatabaseInitializer implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) {
-        Arrays.stream(words)
-                .map(spamWord -> SpamWordEntity.builder().word(spamWord).build())
-                .forEach(spamWordRepository::save);
+
+        Random random = new Random();
+
+        List<SpamWordEntity> spamWords = Arrays.stream(words)
+                .map(spamWord -> SpamWordEntity.builder()
+                        .word(spamWord)
+                        .impactFactor(random.nextDouble())
+                        .relatedWords(new ArrayList<>())
+                        .build())
+                .collect(Collectors.toList());
+
+        spamWords.forEach(spamWord -> {
+            spamWords.stream()
+                    .filter(potentialRelatedWord -> !spamWord.equals(potentialRelatedWord) && potentialRelatedWord.getWord().contains(spamWord.getWord()))
+                    .forEach(potentialRelatedWord -> spamWord.getRelatedWords().add(potentialRelatedWord));
+        });
+
+        spamWordRepository.saveAll(spamWords);
+
+        logger.info("Database initialized with {} spam words", spamWordRepository.count());
     }
 }
