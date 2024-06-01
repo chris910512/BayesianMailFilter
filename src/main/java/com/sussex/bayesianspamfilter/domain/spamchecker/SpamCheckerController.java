@@ -24,4 +24,10 @@ public class SpamCheckerController {
         String message = spamProbability > 0.5 ? "This email is likely spam." : "This email is likely not spam.";
         return ResponseEntity.ok(message);
     }
+
+    @PostMapping("/train-spam")
+    public ResponseEntity<String> trainSpam(@RequestBody EmailTrainRequest emailContentRequest) {
+        bayesianFilter.train(emailContentRequest);
+        return ResponseEntity.ok().build();
+    }
 }
