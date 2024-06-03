@@ -1,0 +1,133 @@
+body {
+    background-color: #ffc845;
+    display: flex;
+    justify-content: normal;
+    align-items: center;
+    flex-direction: column;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    background-color: #94a596;
+    overflow: auto;
+    width: 80%;
+    margin: 0 auto;
+    border-radius: 25px;
+}
+
+.navbar a {
+    flex: 1;
+    float: left;
+    padding: 12px;
+    color: #003b49;
+    text-decoration: none;
+    font-size: 17px;
+    width: 100%;
+    text-align: center;
+}
+
+.navbar a:hover {
+    background-color: #94a596;
+    color: #003b49;
+}
+
+#checkSpam, #train {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 80vh;
+}
+
+input[type="submit"] {
+    background-color: #94a596;
+    color: #003b49;
+    border: none;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+textarea {
+    width: 80vw;
+    height: 20vw;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+input[type="checkbox"] {
+    visibility: hidden;
+    position: absolute;
+}
+
+input[type="checkbox"] + label {
+    position: relative;
+    padding-left: 35px;
+    cursor: pointer;
+    display: inline-block;
+    color: #003b49;
+    font-size: 16px;
+}
+
+input[type="checkbox"] + label:before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 25px;
+    height: 25px;
+    border: 2px solid #003b49;
+    border-radius: 3px;
+    background-color: #94a596;
+}
+
+input[type="checkbox"]:checked + label:before {
+    content: "X";
+    color: #003b49;
+    text-align: center;
+    line-height: 25px;
+}
+
+form input[type="checkbox"],
+form label {
+    display: inline-block;
+}
+
+form textarea {
+    margin-bottom: 20px;
+}
+
+.result-message {
+    color: #003b49;
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+.result-isSpam {
+    color: #003b49;
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+.result-spamProbability {
+    color: #003b49;
+    font-size: 20px;
+    margin-bottom: 10px;
+}

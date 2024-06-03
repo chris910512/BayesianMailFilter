@@ -2,31 +2,31 @@ package com.sussex.bayesianspamfilter.domain.spamchecker;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-public class SpamCheckerController {
+public class SpamCheckerRestController {
 
     private final BayesianFilter bayesianFilter;
 
-    @GetMapping("/check-spam")
-    public String checkSpam() {
-        return "Spam Checker";
-    }
-
     @PostMapping("/check-spam")
-    public ResponseEntity<String> checkSpam(@RequestBody EmailContentRequest emailContentRequest) {
+    public ResponseEntity<EmailSpamCheckResponse> checkSpam(@RequestBody EmailContentRequest emailContentRequest) {
         double spamProbability = bayesianFilter.calculateSpamProbability(emailContentRequest);
-        String message = spamProbability > 0.5 ? "This email is likely spam." : "This email is likely not spam.";
-        return ResponseEntity.ok(message);
+        boolean isSpam = spamProbability > 0.2;
+
+        return ResponseEntity.ok(EmailSpamCheckResponse.builder()
+                .message(isSpam ? "This email is likely spam." : "This email is likely not spam.")
+                .isSpam(isSpam)
+                .spamProbability(spamProbability)
+                .build()
+        );
     }
 
     @PostMapping("/train-spam")
-    public ResponseEntity<String> trainSpam(@RequestBody EmailTrainRequest emailContentRequest) {
+    public ResponseEntity<Void> trainSpam(@RequestBody EmailTrainRequest emailContentRequest) {
         bayesianFilter.train(emailContentRequest);
         return ResponseEntity.ok().build();
     }

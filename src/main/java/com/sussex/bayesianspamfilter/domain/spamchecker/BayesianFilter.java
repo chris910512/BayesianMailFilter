@@ -3,7 +3,7 @@ package com.sussex.bayesianspamfilter.domain.spamchecker;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
+import java.util.*;
 
 @Component
 @RequiredArgsConstructor
@@ -19,7 +19,7 @@ public class BayesianFilter {
         double totalSpamScore = 0.0;
         for (String word : words) {
             for (SpamWordEntity spamWord : spamWords) {
-                if (spamWord.getWord().equals(word)) {
+                if (jaccardSimilarity(spamWord.getWord(), word) > 0.8) {
                     totalSpamScore += spamWord.getImpactFactor();
                     for (SpamWordEntity relatedWord : spamWord.getRelatedWords()) {
                         if (words.contains(relatedWord.getWord())) {
@@ -37,22 +37,43 @@ public class BayesianFilter {
         List<String> words = preprocessor.preprocess(emailTrainRequest.getContent());
         List<SpamWordEntity> spamWords = spamWordRepository.findAll();
 
-        for (String word : words) {
-            for (SpamWordEntity spamWord : spamWords) {
-                if (spamWord.getWord().equals(word)) {
-                    adjustImpactFactor(spamWord, emailTrainRequest.isSpam());
-                    for (SpamWordEntity relatedWord : spamWord.getRelatedWords()) {
-                        adjustImpactFactor(relatedWord, emailTrainRequest.isSpam());
-                    }
-                }
-            }
+        List<SpamWordEntity> newSpamWords = new ArrayList<>();
+
+        Map<String, Integer> wordCounts = new HashMap<>();
+        for (SpamWordEntity spamWord : spamWords) {
+            wordCounts.put(spamWord.getWord(), wordCounts.getOrDefault(spamWord.getWord(), 0) + 1);
         }
 
-        spamWordRepository.saveAll(spamWords);
+        for (String word : words) {
+            double maxSimilarity = 0.8;
+
+            for (SpamWordEntity spamWord : spamWords) {
+                double similarity = jaccardSimilarity(spamWord.getWord(), word);
+                if (similarity > maxSimilarity) {
+                    newSpamWords.add(spamWord);
+                }
+            }
+
+            int count = wordCounts.getOrDefault(word, 0);
+            double impactFactor = 0.1 + count * 0.01;
+            spamWordRepository.save(SpamWordEntity.builder()
+                    .word(word)
+                    .impactFactor(impactFactor)
+                    .relatedWords(newSpamWords)
+                    .build());
+        }
     }
 
-    private void adjustImpactFactor(SpamWordEntity spamWord, boolean isSpam) {
-        double adjustment = isSpam ? 0.1 : -0.1;
-        spamWord.setImpactFactor(Math.max(0, spamWord.getImpactFactor() + adjustment));
+    public double jaccardSimilarity(String word1, String word2) {
+        Set<String> set1 = new HashSet<>(Arrays.asList(word1.split("")));
+        Set<String> set2 = new HashSet<>(Arrays.asList(word2.split("")));
+
+        Set<String> intersection = new HashSet<>(set1);
+        intersection.retainAll(set2);
+
+        Set<String> union = new HashSet<>(set1);
+        union.addAll(set2);
+
+        return (double) intersection.size() / union.size();
     }
 }
