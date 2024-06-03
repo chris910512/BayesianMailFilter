@@ -56,7 +56,12 @@ public class DatabaseInitializer implements CommandLineRunner {
             "Buy direct", "Clearance", "Order",
             "$$$", "Marketing solutions", "Join millions",
             "Name brand", "No questions asked", "Giving it away",
-            "Best rates", "Compare", "Drastically reduced"
+            "Best rates", "Compare", "Drastically reduced", "Delivery", "Fast cash",
+            "Hidden", "Income", "Make money", "Million dollars",
+            "Verification", "No catch", "No credit check", "No fees",
+            "No hidden costs", "No hidden fees", "No interest", "No investment",
+            "Package", "Promise", "Pure profit", "Risk-free",
+            "Unfortunate", "Unlimited", "Unsolicited", "Warranty",
     };
 
     @Override
