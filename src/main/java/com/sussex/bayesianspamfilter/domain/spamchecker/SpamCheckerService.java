@@ -1,17 +1,26 @@
 package com.sussex.bayesianspamfilter.domain.spamchecker;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-@Component
+@Service
 @RequiredArgsConstructor
-public class BayesianFilter {
+public class SpamCheckerService {
+
+    //TODO: Cache the spam words in memory
+    //TODO: Implement a mechanism to remove spam words that are not used anymore
+    //TODO: GraphDB for storing the spam words and their relations
 
     private final SpamWordRepository spamWordRepository;
     private final Preprocessor preprocessor;
 
+    @Transactional
     public double calculateSpamProbability(EmailContentRequest emailContentRequest) {
         List<String> words = preprocessor.preprocess(emailContentRequest.getContent());
         List<SpamWordEntity> spamWords = spamWordRepository.findAll();
@@ -19,7 +28,7 @@ public class BayesianFilter {
         double totalSpamScore = 0.0;
         for (String word : words) {
             for (SpamWordEntity spamWord : spamWords) {
-                if (jaccardSimilarity(spamWord.getWord(), word) > 0.8) {
+                if (BayesianFilterUtils.jaccardSimilarity(spamWord.getWord(), word) > 0.8) {
                     totalSpamScore += spamWord.getImpactFactor();
                     for (SpamWordEntity relatedWord : spamWord.getRelatedWords()) {
                         if (words.contains(relatedWord.getWord())) {
@@ -33,6 +42,7 @@ public class BayesianFilter {
         return totalSpamScore / words.size();
     }
 
+    @Transactional
     public void train(EmailTrainRequest emailTrainRequest) {
         List<String> words = preprocessor.preprocess(emailTrainRequest.getContent());
         List<SpamWordEntity> spamWords = spamWordRepository.findAll();
@@ -48,7 +58,7 @@ public class BayesianFilter {
             double maxSimilarity = 0.8;
 
             for (SpamWordEntity spamWord : spamWords) {
-                double similarity = jaccardSimilarity(spamWord.getWord(), word);
+                double similarity = BayesianFilterUtils.jaccardSimilarity(spamWord.getWord(), word);
                 if (similarity > maxSimilarity) {
                     newSpamWords.add(spamWord);
                 }
@@ -64,16 +74,4 @@ public class BayesianFilter {
         }
     }
 
-    public double jaccardSimilarity(String word1, String word2) {
-        Set<String> set1 = new HashSet<>(Arrays.asList(word1.split("")));
-        Set<String> set2 = new HashSet<>(Arrays.asList(word2.split("")));
-
-        Set<String> intersection = new HashSet<>(set1);
-        intersection.retainAll(set2);
-
-        Set<String> union = new HashSet<>(set1);
-        union.addAll(set2);
-
-        return (double) intersection.size() / union.size();
-    }
 }

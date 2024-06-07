@@ -10,11 +10,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class SpamCheckerRestController {
 
-    private final BayesianFilter bayesianFilter;
+    private final SpamCheckerService spamCheckerService;
 
     @PostMapping("/check-spam")
     public ResponseEntity<EmailSpamCheckResponse> checkSpam(@RequestBody EmailContentRequest emailContentRequest) {
-        double spamProbability = bayesianFilter.calculateSpamProbability(emailContentRequest);
+        double spamProbability = spamCheckerService.calculateSpamProbability(emailContentRequest);
         boolean isSpam = spamProbability > 0.2;
 
         return ResponseEntity.ok(EmailSpamCheckResponse.builder()
@@ -27,7 +27,7 @@ public class SpamCheckerRestController {
 
     @PostMapping("/train-spam")
     public ResponseEntity<Void> trainSpam(@RequestBody EmailTrainRequest emailContentRequest) {
-        bayesianFilter.train(emailContentRequest);
+        spamCheckerService.train(emailContentRequest);
         return ResponseEntity.ok().build();
     }
 }
