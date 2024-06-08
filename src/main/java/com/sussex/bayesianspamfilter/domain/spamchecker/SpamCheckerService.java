@@ -16,6 +16,7 @@ public class SpamCheckerService {
     //TODO: Cache the spam words in memory
     //TODO: Implement a mechanism to remove spam words that are not used anymore
     //TODO: GraphDB for storing the spam words and their relations
+    //TODO: Re-generate the spam words and their relations every 1 hours
 
     private final SpamWordRepository spamWordRepository;
     private final Preprocessor preprocessor;
