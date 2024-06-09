@@ -68,6 +68,7 @@ public class DatabaseInitializer implements CommandLineRunner {
     @Transactional
     public void run(String... args) {
 
+        spamWordRepository.deleteAll();
         Random random = new Random();
 
         List<SpamWordEntity> spamWords = Arrays.stream(words)
