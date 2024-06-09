@@ -5,11 +5,12 @@ spring:
     password: a123456#
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
+    open-in-view: true
     hibernate:
       ddl-auto: update
     show-sql: true
     properties:
-      database-platform: org.hibernate.dialect.H2Dialect
+      database-platform: org.hibernate.dialect.MySQLDialect
   h2:
     console:
       enabled: true

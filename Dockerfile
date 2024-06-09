@@ -1,10 +1,5 @@
 FROM gradle:8.5-jdk21 AS build
-COPY --chown=gradle:gradle . /home/gradle/src
-WORKDIR /home/gradle/src
-RUN gradle build -x test --no-daemon
-
-FROM openjdk:21-slim AS production
-EXPOSE 8080
-RUN mkdir /app
-COPY --from=build /home/gradle/src/build/libs/*.jar /app/companieshouse-*.jar
-ENTRYPOINT ["java","-jar","app/spam-checker-*.jar"]
+VOLUME /tmp
+ARG JAR_FILE=./build/libs/*.jar
+COPY ${JAR_FILE} app.jar
+ENTRYPOINT ["java","-jar","app.jar"]

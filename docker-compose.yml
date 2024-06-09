@@ -1,0 +1,35 @@
+version: '1'
+
+services:
+  database:
+    image: mysql
+    container_name: test_db_5
+    environment:
+      MYSQL_DATABASE: spam_checker
+      MYSQL_ROOT_HOST: '%'
+      MYSQL_ROOT_PASSWORD: a123456#
+    command: ['--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci']
+    ports:
+      - "3306:3306"
+    networks:
+      - test_network
+
+  application:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - database
+    container_name: test_app_1
+    environment:
+        SPRING_DATASOURCE_URL: jdbc:mysql://database:3306/spam_checker?serverTimezone=UTC&characterEncoding=UTF-8&allowPublicKeyRetrieval=true&useSSL=false
+        SPRING_DATASOURCE_USERNAME: root
+        SPRING_DATASOURCE_PASSWORD: a123456#
+    networks:
+      - test_network
+
+networks:
+  test_network:
+
