@@ -4,10 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -65,13 +62,20 @@ public class SpamCheckerService {
                 }
             }
 
+            Optional<SpamWordEntity> optionalSpamWord = spamWords.stream().findAny();
             int count = wordCounts.getOrDefault(word, 0);
-            double impactFactor = 0.1 + count * 0.01;
-            spamWordRepository.save(SpamWordEntity.builder()
-                    .word(word)
-                    .impactFactor(impactFactor)
-                    .relatedWords(newSpamWords)
-                    .build());
+            double impactFactorVector = count * 0.01;
+            if(optionalSpamWord.isPresent() && optionalSpamWord.get().getWord().equals(word)){
+                optionalSpamWord.get().setImpactFactor(optionalSpamWord.get().getImpactFactor() + impactFactorVector);
+            } else {
+                double impactFactor = 0.1 + impactFactorVector;
+                spamWordRepository.save(SpamWordEntity.builder()
+                        .word(word)
+                        .impactFactor(impactFactor)
+                        .relatedWords(newSpamWords)
+                        .build());
+            }
+
         }
     }
 
