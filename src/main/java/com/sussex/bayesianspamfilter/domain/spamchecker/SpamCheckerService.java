@@ -66,6 +66,16 @@ public class SpamCheckerService {
             int count = wordCounts.getOrDefault(word, 0);
             double impactFactorVector = count * 0.01;
             if(optionalSpamWord.isPresent() && optionalSpamWord.get().getWord().equals(word)){
+                double impactFactor = optionalSpamWord.get().getImpactFactor();
+                if (impactFactor > 0.8) {
+                    impactFactorVector = 0.8;
+                } else if (impactFactor > 0.7) {
+                    impactFactorVector = count * 0.003;
+                } else if (impactFactor > 0.6) {
+                    impactFactorVector = count * 0.004;
+                } else if (impactFactor > 0.5) {
+                    impactFactorVector = count * 0.005;
+                }
                 optionalSpamWord.get().setImpactFactor(optionalSpamWord.get().getImpactFactor() + impactFactorVector);
             } else {
                 double impactFactor = 0.1 + impactFactorVector;
