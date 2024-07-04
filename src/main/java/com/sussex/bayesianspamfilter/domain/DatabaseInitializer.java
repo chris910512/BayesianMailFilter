@@ -74,7 +74,7 @@ public class DatabaseInitializer implements CommandLineRunner {
         List<SpamWordEntity> spamWords = Arrays.stream(words)
                 .map(spamWord -> SpamWordEntity.builder()
                         .word(spamWord)
-                        .impactFactor(random.nextDouble())
+                        .impactFactor(random.nextDouble() * 80)
                         .relatedWords(new ArrayList<>())
                         .build())
                 .collect(Collectors.toList());
