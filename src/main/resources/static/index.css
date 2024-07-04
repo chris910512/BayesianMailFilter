@@ -27,11 +27,6 @@ body {
     text-align: center;
 }
 
-.navbar a:hover {
-    background-color: #94a596;
-    color: #003b49;
-}
-
 #checkSpam, #train {
     display: flex;
     flex-direction: column;
@@ -43,6 +38,8 @@ body {
 input[type="submit"] {
     background-color: #94a596;
     color: #003b49;
+    width: 150px;
+    height: 50px;
     border: none;
     padding: 15px 32px;
     text-align: center;

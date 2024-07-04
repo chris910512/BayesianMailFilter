@@ -13,6 +13,35 @@ window.onload = function () {
 }
 
 document.addEventListener('DOMContentLoaded', (event) => {
+
+    const navbarItems = document.querySelectorAll('.navbar a');
+    const checkSpam = document.querySelector('.navbar a[href="#checkSpam"]');
+    const train = document.querySelector('.navbar a[href="#train"]');
+
+    checkSpam.style.color = '#94a596';
+    checkSpam.style.background = '#003b49';
+
+    navbarItems.forEach(item => {
+        item.addEventListener('click', function() {
+            checkSpam.style.background = '#94a596';
+            checkSpam.style.color = '#003b49';
+            train.style.background = '#94a596';
+            train.style.color = '#003b49';
+
+            this.style.color = '#94a596';
+            this.style.background = '#003b49';
+
+            if (this === checkSpam) {
+                train.style.background = '#94a596';
+                train.style.color = '#003b49';
+            } else {
+                checkSpam.style.background = '#94a596';
+                checkSpam.style.color = '#003b49';
+            }
+        });
+    });
+
+
     document.querySelector('#checkSpam input[type="submit"]').addEventListener('click', function (event) {
         event.preventDefault();
 
