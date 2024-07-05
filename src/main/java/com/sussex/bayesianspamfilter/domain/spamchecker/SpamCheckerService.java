@@ -45,8 +45,6 @@ public class SpamCheckerService {
         List<String> words = preprocessor.preprocess(emailTrainRequest.getContent());
         List<SpamWordEntity> spamWords = spamWordRepository.findAll();
 
-        List<SpamWordEntity> newSpamWords = new ArrayList<>();
-
         Map<String, Integer> wordCounts = new HashMap<>();
         for (SpamWordEntity spamWord : spamWords) {
             wordCounts.put(spamWord.getWord(), wordCounts.getOrDefault(spamWord.getWord(), 0) + 1);
@@ -55,18 +53,19 @@ public class SpamCheckerService {
         for (String word : words) {
             double maxSimilarity = 0.8;
 
+            List<SpamWordEntity> newSpamWords = new ArrayList<>();
+
             for (SpamWordEntity spamWord : spamWords) {
                 double similarity = BayesianFilterUtils.jaccardSimilarity(spamWord.getWord(), word);
                 if (similarity > maxSimilarity) {
                     newSpamWords.add(spamWord);
                 }
             }
-
-            Optional<SpamWordEntity> optionalSpamWord = spamWords.stream().findAny();
+            Optional<SpamWordEntity> optionalSpamWordEntity = spamWordRepository.findByWord(word);
             int count = wordCounts.getOrDefault(word, 0);
             double impactFactorVector = count * 0.01;
-            if(optionalSpamWord.isPresent() && optionalSpamWord.get().getWord().equals(word)){
-                double impactFactor = optionalSpamWord.get().getImpactFactor();
+            if(optionalSpamWordEntity.isPresent()){
+                double impactFactor = optionalSpamWordEntity.get().getImpactFactor();
                 if (impactFactor > 0.8) {
                     impactFactorVector = 0.8;
                 } else if (impactFactor > 0.7) {
@@ -76,9 +75,9 @@ public class SpamCheckerService {
                 } else if (impactFactor > 0.5) {
                     impactFactorVector = count * 0.005;
                 }
-                optionalSpamWord.get().setImpactFactor(optionalSpamWord.get().getImpactFactor() + impactFactorVector);
+                optionalSpamWordEntity.get().setImpactFactor(optionalSpamWordEntity.get().getImpactFactor() + impactFactorVector);
             } else {
-                double impactFactor = 0.1 + impactFactorVector;
+                double impactFactor = 0.5 + impactFactorVector;
                 spamWordRepository.save(SpamWordEntity.builder()
                         .word(word)
                         .impactFactor(impactFactor)
