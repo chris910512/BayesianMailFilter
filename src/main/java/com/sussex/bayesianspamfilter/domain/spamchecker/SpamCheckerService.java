@@ -10,30 +10,27 @@ import java.util.*;
 @RequiredArgsConstructor
 public class SpamCheckerService {
 
-    //TODO: Cache the spam words in memory
-    //TODO: Implement a mechanism to remove spam words that are not used anymore
-    //TODO: GraphDB for storing the spam words and their relations
-    //TODO: Re-generate the spam words and their relations every 1 hours
-
     private final SpamWordRepository spamWordRepository;
     private final Preprocessor preprocessor;
 
     @Transactional
     public SpamProbabilityResult calculateSpamProbability(EmailContentRequest emailContentRequest) {
-        List<String> words = preprocessor.preprocess(emailContentRequest.getContent());
+        List<String> ngrams = preprocessor.preprocess(emailContentRequest.getContent());
         List<SpamWordEntity> spamWords = spamWordRepository.findAll();
 
         double totalSpamScore = 0.0;
+        double maxPossibleScore = ngrams.size(); // Maximum possible score is the number of n-grams
         Map<String, Double> wordImpactMap = new HashMap<>();
 
-        for (String word : words) {
+        for (String ngram : ngrams) {
+            if (Preprocessor.STOP_WORDS.contains(ngram)) continue;
             for (SpamWordEntity spamWord : spamWords) {
-                if (BayesianFilterUtils.jaccardSimilarity(spamWord.getWord(), word) > 0.8) {
+                if (BayesianFilterUtils.jaccardSimilarity(spamWord.getWord(), ngram) > 0.8) {
                     double impact = spamWord.getImpactFactor();
                     totalSpamScore += impact;
-                    wordImpactMap.put(word, wordImpactMap.getOrDefault(word, 0.0) + impact);
+                    wordImpactMap.put(ngram, wordImpactMap.getOrDefault(ngram, 0.0) + impact);
                     for (SpamWordEntity relatedWord : spamWord.getRelatedWords()) {
-                        if (words.contains(relatedWord.getWord())) {
+                        if (ngrams.contains(relatedWord.getWord())) {
                             impact = relatedWord.getImpactFactor();
                             totalSpamScore += impact;
                             wordImpactMap.put(relatedWord.getWord(), wordImpactMap.getOrDefault(relatedWord.getWord(), 0.0) + impact);
@@ -53,13 +50,13 @@ public class SpamCheckerService {
             topWordImpactPercentages.put(word, (sortedWords.get(i).getValue() / totalSpamScore) * 100);
         }
 
-        double spamProbability = totalSpamScore / words.size();
+        double spamProbability = Math.min(totalSpamScore / maxPossibleScore, 1.0); // Ensure spamProbability does not exceed 1
         return new SpamProbabilityResult(spamProbability, topWords, topWordImpactPercentages);
     }
 
     @Transactional
     public void train(EmailTrainRequest emailTrainRequest) {
-        List<String> words = preprocessor.preprocess(emailTrainRequest.getContent());
+        List<String> ngrams = preprocessor.preprocess(emailTrainRequest.getContent());
         List<SpamWordEntity> spamWords = spamWordRepository.findAll();
 
         Map<String, Integer> wordCounts = new HashMap<>();
@@ -67,19 +64,20 @@ public class SpamCheckerService {
             wordCounts.put(spamWord.getWord(), wordCounts.getOrDefault(spamWord.getWord(), 0) + 1);
         }
 
-        for (String word : words) {
+        for (String ngram : ngrams) {
+            if (Preprocessor.STOP_WORDS.contains(ngram)) continue;
             double maxSimilarity = 0.8;
 
             List<SpamWordEntity> newSpamWords = new ArrayList<>();
 
             for (SpamWordEntity spamWord : spamWords) {
-                double similarity = BayesianFilterUtils.jaccardSimilarity(spamWord.getWord(), word);
+                double similarity = BayesianFilterUtils.jaccardSimilarity(spamWord.getWord(), ngram);
                 if (similarity > maxSimilarity) {
                     newSpamWords.add(spamWord);
                 }
             }
-            Optional<SpamWordEntity> optionalSpamWordEntity = spamWordRepository.findByWord(word);
-            int count = wordCounts.getOrDefault(word, 0);
+            Optional<SpamWordEntity> optionalSpamWordEntity = spamWordRepository.findByWord(ngram);
+            int count = wordCounts.getOrDefault(ngram, 0);
             double impactFactorVector = count * 0.01;
             if(optionalSpamWordEntity.isPresent()){
                 double impactFactor = optionalSpamWordEntity.get().getImpactFactor();
@@ -94,9 +92,9 @@ public class SpamCheckerService {
                 }
                 optionalSpamWordEntity.get().setImpactFactor(optionalSpamWordEntity.get().getImpactFactor() + impactFactorVector);
             } else {
-                double impactFactor = 0.5 + impactFactorVector;
+                double impactFactor = 0.3 + impactFactorVector;
                 spamWordRepository.save(SpamWordEntity.builder()
-                        .word(word)
+                        .word(ngram)
                         .impactFactor(impactFactor)
                         .relatedWords(newSpamWords)
                         .build());
@@ -104,5 +102,4 @@ public class SpamCheckerService {
 
         }
     }
-
 }
