@@ -3,7 +3,7 @@ version: '1'
 services:
   database:
     image: mysql
-    container_name: test_db_5
+    container_name: MySQL
     environment:
       MYSQL_DATABASE: spam_checker
       MYSQL_ROOT_HOST: '%'
@@ -22,7 +22,7 @@ services:
       - "8080:8080"
     depends_on:
       - database
-    container_name: test_app_1
+    container_name: SpringBootApp
     environment:
         SPRING_DATASOURCE_URL: jdbc:mysql://database:3306/spam_checker?serverTimezone=UTC&characterEncoding=UTF-8&allowPublicKeyRetrieval=true&useSSL=false
         SPRING_DATASOURCE_USERNAME: root

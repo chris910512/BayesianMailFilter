@@ -13,4 +13,5 @@ public class EmailSpamCheckResponse {
     private String message;
     private Boolean isSpam;
     private Double spamProbability;
+    private SpamProbabilityResult spamProbabilityResult;
 }

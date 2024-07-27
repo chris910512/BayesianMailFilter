@@ -15,18 +15,18 @@
 
 <div id="checkSpam">
     <h2>Check Spam</h2>
-    <form action="/check-spam" method="post">
+    <form id="checkSpamForm">
         <textarea name="content" rows="10" cols="30"></textarea>
-        <input type="submit" value="Check">
+        <input type="button" value="Check" onclick="submitCheckSpamForm()">
     </form>
     <div id="spamCheckResult"></div>
 </div>
 
 <div id="train">
     <h2>Train</h2>
-    <form action="/train-spam" method="post">
+    <form id="trainForm">
         <textarea name="content" rows="10" cols="30"></textarea>
-        <input type="submit" value="Train">
+        <input type="button" value="Train" onclick="submitTrainForm()">
     </form>
     <div id="trainResult"></div>
 </div>

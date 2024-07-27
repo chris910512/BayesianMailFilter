@@ -8,7 +8,11 @@ import java.util.stream.Collectors;
 
 @Component
 public class Preprocessor {
-    private static final List<String> STOP_WORDS = Arrays.asList("a", "the", "is", "it", "this", "and", "in", "to", "of");
+    private static final List<String> STOP_WORDS = Arrays.asList(
+            "a", "the", "is", "it", "this",
+            "and", "in", "to", "of", "your",
+            "best", "regards", "Dear"
+    );
 
     public List<String> preprocess(String content) {
         content = content.toLowerCase().replaceAll("[^a-z ]", "");

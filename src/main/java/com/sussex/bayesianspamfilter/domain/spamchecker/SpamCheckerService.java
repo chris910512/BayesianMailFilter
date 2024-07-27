@@ -19,25 +19,42 @@ public class SpamCheckerService {
     private final Preprocessor preprocessor;
 
     @Transactional
-    public double calculateSpamProbability(EmailContentRequest emailContentRequest) {
+    public SpamProbabilityResult calculateSpamProbability(EmailContentRequest emailContentRequest) {
         List<String> words = preprocessor.preprocess(emailContentRequest.getContent());
         List<SpamWordEntity> spamWords = spamWordRepository.findAll();
 
         double totalSpamScore = 0.0;
+        Map<String, Double> wordImpactMap = new HashMap<>();
+
         for (String word : words) {
             for (SpamWordEntity spamWord : spamWords) {
                 if (BayesianFilterUtils.jaccardSimilarity(spamWord.getWord(), word) > 0.8) {
-                    totalSpamScore += spamWord.getImpactFactor();
+                    double impact = spamWord.getImpactFactor();
+                    totalSpamScore += impact;
+                    wordImpactMap.put(word, wordImpactMap.getOrDefault(word, 0.0) + impact);
                     for (SpamWordEntity relatedWord : spamWord.getRelatedWords()) {
                         if (words.contains(relatedWord.getWord())) {
-                            totalSpamScore += relatedWord.getImpactFactor();
+                            impact = relatedWord.getImpactFactor();
+                            totalSpamScore += impact;
+                            wordImpactMap.put(relatedWord.getWord(), wordImpactMap.getOrDefault(relatedWord.getWord(), 0.0) + impact);
                         }
                     }
                 }
             }
         }
 
-        return totalSpamScore / words.size();
+        List<Map.Entry<String, Double>> sortedWords = new ArrayList<>(wordImpactMap.entrySet());
+        sortedWords.sort((e1, e2) -> Double.compare(e2.getValue(), e1.getValue()));
+        List<String> topWords = new ArrayList<>();
+        Map<String, Double> topWordImpactPercentages = new HashMap<>();
+        for (int i = 0; i < Math.min(5, sortedWords.size()); i++) {
+            String word = sortedWords.get(i).getKey();
+            topWords.add(word);
+            topWordImpactPercentages.put(word, (sortedWords.get(i).getValue() / totalSpamScore) * 100);
+        }
+
+        double spamProbability = totalSpamScore / words.size();
+        return new SpamProbabilityResult(spamProbability, topWords, topWordImpactPercentages);
     }
 
     @Transactional

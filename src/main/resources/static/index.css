@@ -35,7 +35,8 @@ body {
     height: 80vh;
 }
 
-input[type="submit"] {
+input[type="submit"],
+input[type="button"] {
     background-color: #94a596;
     color: #003b49;
     width: 150px;
