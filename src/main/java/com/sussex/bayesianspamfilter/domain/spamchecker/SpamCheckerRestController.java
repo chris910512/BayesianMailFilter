@@ -21,7 +21,7 @@ public class SpamCheckerRestController {
     @PostMapping("/check-spam")
     public ResponseEntity<EmailSpamCheckResponse> checkSpam(@RequestBody EmailContentRequest emailContentRequest) {
         SpamProbabilityResult spamProbabilityResult = spamCheckerService.calculateSpamProbability(emailContentRequest);
-        boolean isSpam = spamProbabilityResult.getSpamProbability() > 0.2;
+        boolean isSpam = spamProbabilityResult.getSpamProbability() > 0.5;
 
         Map<String, Double> sortedWordImpactPercentages = spamProbabilityResult.getWordImpactPercentages().entrySet().stream()
                 .sorted(Map.Entry.<String, Double>comparingByValue().reversed())
